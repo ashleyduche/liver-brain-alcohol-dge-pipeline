@@ -1,0 +1,12 @@
+.Rhistory
+.RData
+.Rproj.user
+.DS_Store
+
+# Real, unpublished study data -- stays local only. The pipeline runs on
+# data/example/ by default; point config.yml at these once you have them.
+data/raw/
+
+# Regenerated on every run -- docs/figures/ holds curated copies for the README.
+results/
+data/processed/
