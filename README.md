@@ -1,11 +1,16 @@
 # Liver & Brain Alcohol-Treatment DGE Pipeline
 
-Reproducible DESeq2 pipeline for spatial transcriptomics ROIs from the
-intragastric alcohol-fed APP/PS1 mouse study (brain: plaque-bearing/
-plaque-free cortex and hippocampus; liver: periportal/perivenous).
+Reproducible DESeq2 pipeline for the "Hepatic and Brain Spatial Gene 
+Expression Changes in Intragastric Alcohol Fed APP/PS1 Alzheimer's Disease
+Mouse Model" study. This includes spatial transcriptomic data sourced from 
+brain and liver regions of interest (ROIs): 
+Brain - plaque-bearing/plaque-free cortex and hippocampus
+Liver - periportal/perivenous 
 
-The real study data isn't public yet, so this pipeline ships with a small
-synthetic example dataset and runs out of the box:
+This pipeline can be executed using the provided synthetic data until the
+study becomes public. Once available, placeholder files can be replaced 
+with published data, Accession GSE324193. 
+
 
 ```bash
 git clone <this-repo-url>
@@ -15,18 +20,18 @@ Rscript run_pipeline.R
 
 ## Methods
 
-For each of 6 ROIs, DESeq2 (`~ Group`, Control as reference) compares
-alcohol-treated vs. control samples. Genes with `padj <= 0.01` and
-`log2FoldChange` beyond ±0.32 are significant (Benjamini-Hochberg FDR).
-ROIs with fewer than 10 significant genes are dropped from the cross-ROI
-comparison. Batch (animal ID) is recovered from each sample's ID and used
-for PCA QC.
+For each of the 6 ROIs, DESeq2 (`~ Group`, Control as reference) compares
+alcohol-treated vs. control samples. Statistically significant differentially
+expressed genes (DEGs) were identified using `padj <= 0.01` and`log2FoldChange > ±0.32` 
+threshold with Benjamini-Hochberg FDR correction. ROI genelists with fewer than 10 
+significant DEGs are excluded from downstream analyses. 
+Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
 
 ## Data
 
 `config.yml`'s `data_source` controls where data comes from:
 
-| Mode | Setting | What it does |
+| Mode | Setting | Purpose |
 |---|---|---|
 | Example (default) | `local`, paths → `data/example/` | Synthetic 72-sample dataset, same design as the real study. Not real measurements. |
 | Real data | `local`, paths → `data/raw/` | Point `config.yml` at `data/raw/` once you have the real files locally (not in this repo). |
@@ -36,7 +41,7 @@ for PCA QC.
 
 ## Figures
 
-Every run regenerates `results/figures/`: PCA, MA, and volcano plots per
+Every run produces `results/figures/`: PCA, MA, and volcano plots per
 ROI, plus a combined per-ROI heatmap grid. Examples from the synthetic data:
 
 **PCA** — Control (green) vs. Alcohol-Treated (red), shaped by batch:
@@ -56,6 +61,7 @@ ROI, plus a combined per-ROI heatmap grid. Examples from the synthetic data:
 ![Heatmap](docs/figures/example_heatmap.png)
 
 ## Structure
+
 
 ```
 config.yml                     ROI definitions, thresholds, data settings
