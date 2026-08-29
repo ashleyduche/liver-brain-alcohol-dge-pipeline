@@ -35,7 +35,7 @@ Three ways to get data into the pipeline, controlled by `config.yml`:
 |---|---|---|
 | Example (default) | `local`, paths → `data/example/` | Synthetic 72-sample dataset, same ROI design as the real study, DEG pattern shaped to roughly match the manuscript (liver ≫ hippocampus > cortex). Not real measurements. |
 | Real data | `local`, paths → `data/raw/` | Once you have `MetaData.xlsx` + `RawCounts_AllSamples.csv` locally (not in this repo — see below), point `config.yml`'s `paths` at `data/raw/`. |
-| GEO | `geo`, `geo.accession` set | Once this dataset is published, downloads `RawCounts_AllSamples.csv` from GEO via `GEOquery::getGEOSuppFiles()` and overwrites `raw_counts_csv` before the pipeline runs. Metadata still comes from the local file either way — GEO only exposes it as free-text characteristics keyed to GSM accession, not to the `*library name` values the counts matrix uses as column headers, and that mapping isn't reliable to re-derive until a real accession exists. `R/00_fetch_from_geo.R`'s download mechanics were dry-run tested against a real, unrelated published series. |
+| GEO | `geo`, `geo.accession` set | Once this dataset is published, downloads `RawCounts_AllSamples.csv` from GEO via `GEOquery::getGEOSuppFiles()` and overwrites `raw_counts_csv` before the pipeline runs. Metadata still comes from the local file either way — GEO only exposes it as free-text characteristics keyed to GSM accession, not to the `*library name` values the counts matrix uses as column headers, and that mapping isn't reliable to re-derive until a real accession exists. `R/01_fetch_from_geo.R`'s download mechanics were dry-run tested against a real, unrelated published series. |
 
 `data/raw/` is gitignored — the real dataset is unpublished and never gets
 committed here. ROI membership is derived from `tissue` + `region` (+
@@ -76,15 +76,16 @@ Requires R with `DESeq2`, `readxl`, `dplyr`, `tidyr`, `stringr`, `ggplot2`,
 config.yml                     ROI definitions, thresholds, data_source/geo settings
 R/
   00_setup.R                   loads config + shared functions
-  00_fetch_from_geo.R          no-op unless data_source: geo
+  01_fetch_from_geo.R          no-op unless data_source: geo
+  02_prepare_metadata.R        parses metadata -> data/processed/sample_metadata.csv
+  03_normalize_counts.R        builds each ROI's dds + size factors (no model fitting yet)
+  04_pca_plots.R               PCA/QC per ROI, run before DESeq2 model fitting
+  05_run_dge_all_rois.R        DESeq2 model fit + results per ROI, looped over config.yml's 6 ROIs
+  05_run_dge_all_rois_no_loop.R   same steps, no loop -- change roi_name and re-run instead
+  06_compare_deg_lists.R       shared/unique significant genes across ROIs
+  07_render_heatmap.R          per-ROI heatmap grid (ggplot2 facet_wrap)
   functions.R                  load_raw_counts(), subset_counts_by_tissue()
-  01_prepare_metadata.R        parses metadata -> data/processed/sample_metadata.csv
-  02_run_dge_all_rois.R        DESeq2 for each ROI, looped over config.yml's 6 ROIs
-  02_run_dge_all_rois_no_loop.R   same steps, no loop -- change roi_name and re-run instead
-  03_compare_deg_lists.R       shared/unique significant genes across ROIs
-  04_render_heatmap.R          per-ROI heatmap grid (ggplot2 facet_wrap)
-  05_pca_plots.R                per-ROI PCA (Group + batch)
-run_pipeline.R                 orchestrator; sources 00-05 in order
+run_pipeline.R                 orchestrator; sources 00-07 in order
 data/
   example/                     synthetic demo dataset (committed)
   raw/                         real data goes here (gitignored, not committed)

@@ -1,14 +1,16 @@
-# PCA per ROI, colored by Group and shaped by batch (animal). Animal is
-# nested within Group here (each animal is entirely one treatment), so
-# this is a QC check for animal-driven separation, not a clean batch test.
+# PCA per ROI on normalized counts, run before DESeq2 model fitting -- a QC
+# check on the actual data going into the model, not a byproduct of it.
+# Colored by Group, shaped by batch (animal). Animal is nested within Group
+# here (each animal is entirely one treatment), so this checks for
+# animal-driven separation, not a clean batch effect test.
 
 figures_dir <- file.path(cfg$paths$results_dir, "figures")
 dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 
 pca_plots <- list()
 
-for (roi_name in names(roi_results)) {
-  norm_log2 <- roi_results[[roi_name]]$norm_log2
+for (roi_name in names(roi_dds)) {
+  norm_log2 <- roi_dds[[roi_name]]$norm_log2
 
   pca <- prcomp(t(norm_log2), scale. = FALSE)
   var_explained <- round(100 * pca$sdev^2 / sum(pca$sdev^2), 1)
@@ -19,7 +21,7 @@ for (roi_name in names(roi_results)) {
 
   p <- ggplot(pca_df, aes(PC1, PC2, color = Group, shape = batch)) +
     geom_point(size = 3) +
-    labs(title = roi_results[[roi_name]]$roi_def$label,
+    labs(title = roi_dds[[roi_name]]$roi_def$label,
          x = sprintf("PC1 (%.1f%%)", var_explained[1]),
          y = sprintf("PC2 (%.1f%%)", var_explained[2]),
          shape = "Batch (animal)") +
