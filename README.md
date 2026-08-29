@@ -81,7 +81,7 @@ R/
   03_pca_plots.R               PCA/QC per ROI on raw counts (log2(counts+1)), before any DESeq2 object exists
   04_run_dge_all_rois.R        DESeq2 (build dds -> normalize -> filter -> fit) per ROI, looped over config.yml's 6 ROIs
   04_run_dge_all_rois_no_loop.R   same steps, no loop -- change roi_name and re-run instead
-  05_compare_deg_lists.R       shared/unique significant genes across ROIs
+  05_compare_deg_lists.R       shared/unique DEGs across plaqueHippo, periportal, perivenous
   06_render_heatmap.R          per-ROI heatmap grid (ggplot2 facet_wrap)
   functions.R                  load_raw_counts(), subset_counts_by_tissue()
 run_pipeline.R                 orchestrator; sources 00-06 in order
@@ -91,7 +91,7 @@ data/
 results/
   normalized_counts/           <ROI>_log2NormalizedCounts.csv
   deg_tables/                  <ROI>_AllDEGs.csv, <ROI>_SigDEGs_*.csv
-  comparisons/                 gene_summary CSVs (all/brain/liver, brain-vs-liver)
+  comparisons/                 gene_summary.csv (every significant gene x which ROI(s) it's in)
   figures/                     PCA plots, per-ROI heatmap grid
 docs/figures/                  example output images used in this README
 ```
