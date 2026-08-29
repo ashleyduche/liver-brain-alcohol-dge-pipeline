@@ -1,0 +1,68 @@
+# Pipeline configuration. ROI definitions are matched against "**tissue",
+# "region", "pathology" in the parsed metadata sheet. `pathology: ~` means
+# "not applicable" (liver ROIs have no plaque-bearing/plaque-free split).
+
+# Defaults to the synthetic example dataset so the pipeline runs out of the
+# box. Point these at data/raw/ once you have the real files locally.
+paths:
+  metadata_xlsx: "data/example/MetaData_example.xlsx"
+  metadata_sheet: "Metadata"
+  raw_counts_csv: "data/example/RawCounts_example.csv"
+  negative_probe: "NegProbe-WTX"
+  processed_metadata_csv: "data/processed/sample_metadata.csv"
+  results_dir: "results"
+
+# "local" (default) reads the paths above as-is. "geo" downloads the raw
+# counts supplementary file from the accession below and overwrites
+# raw_counts_csv before the rest of the pipeline runs -- see
+# R/00_fetch_from_geo.R for why metadata still comes from the local file.
+data_source: local
+
+geo:
+  accession: ~ # e.g. "GSE300000" -- fill in once GEO assigns one after publication
+  supplementary_file: "RawCounts_AllSamples.csv"
+
+thresholds:
+  padj: 0.01
+  abs_log2fc: 0.32
+  min_rowsum_prefilter: 10     # DESeq2 pre-filter: rowSums(counts) >= this
+  min_sig_genes_downstream: 10 # ROI DEG lists smaller than this are dropped
+                                # from the cross-ROI comparison step
+
+group:
+  control_label: "control"
+  treated_label: "ethanol"
+  control_group: "Control"
+  treated_group: "Alcohol-Treated"
+
+rois:
+  plaqueCortex:
+    tissue: brain
+    region: cortex
+    pathology: plaque-bearing
+    label: "Plaque-bearing Cortex"
+  nonplaqueCortex:
+    tissue: brain
+    region: cortex
+    pathology: plaque-free
+    label: "Plaque-free Cortex"
+  plaqueHippo:
+    tissue: brain
+    region: hippocampus
+    pathology: plaque-bearing
+    label: "Plaque-bearing Hippocampus"
+  nonplaqueHippo:
+    tissue: brain
+    region: hippocampus
+    pathology: plaque-free
+    label: "Plaque-free Hippocampus"
+  periportal:
+    tissue: liver
+    region: periportal
+    pathology: ~
+    label: "Periportal Liver"
+  perivenous:
+    tissue: liver
+    region: perivenous
+    pathology: ~
+    label: "Perivenous Liver"
