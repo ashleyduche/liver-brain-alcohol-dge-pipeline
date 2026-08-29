@@ -3,10 +3,12 @@
 # copy-pasted 6 times. Prefer no loop? See 04_run_dge_all_rois_no_loop.R.
 
 dir.create(cfg$paths$results_dir, recursive = TRUE, showWarnings = FALSE)
-norm_dir <- file.path(cfg$paths$results_dir, "normalized_counts")
-deg_dir  <- file.path(cfg$paths$results_dir, "deg_tables")
+norm_dir    <- file.path(cfg$paths$results_dir, "normalized_counts")
+deg_dir     <- file.path(cfg$paths$results_dir, "deg_tables")
+figures_dir <- file.path(cfg$paths$results_dir, "figures")
 dir.create(norm_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(deg_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 
 roi_results <- list()
 
@@ -38,6 +40,32 @@ for (roi_name in names(cfg$rois)) {
 
   dds <- DESeq(dds)
   res <- results(dds)
+
+  # MA plot -- same as the original per-ROI scripts (plotMA(res)).
+  pdf(file.path(figures_dir, paste0(roi_name, "_MA.pdf")))
+  plotMA(res, main = roi_def$label)
+  dev.off()
+  png(file.path(figures_dir, paste0(roi_name, "_MA.png")), width = 800, height = 700, res = 120)
+  plotMA(res, main = roi_def$label)
+  dev.off()
+
+  # Volcano plot: log2FoldChange vs -log10(padj), significant genes in red.
+  is_sig <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj &
+    (res$log2FoldChange > cfg$thresholds$abs_log2fc | res$log2FoldChange < -cfg$thresholds$abs_log2fc)
+  volcano_col <- ifelse(is_sig, "red", "grey60")
+
+  pdf(file.path(figures_dir, paste0(roi_name, "_Volcano.pdf")))
+  plot(res$log2FoldChange, -log10(res$padj), col = volcano_col, pch = 20,
+       xlab = "log2 Fold Change", ylab = "-log10(padj)", main = paste0(roi_def$label, ": Volcano Plot"))
+  abline(v = c(-cfg$thresholds$abs_log2fc, cfg$thresholds$abs_log2fc), lty = 2, col = "grey40")
+  abline(h = -log10(cfg$thresholds$padj), lty = 2, col = "grey40")
+  dev.off()
+  png(file.path(figures_dir, paste0(roi_name, "_Volcano.png")), width = 800, height = 700, res = 120)
+  plot(res$log2FoldChange, -log10(res$padj), col = volcano_col, pch = 20,
+       xlab = "log2 Fold Change", ylab = "-log10(padj)", main = paste0(roi_def$label, ": Volcano Plot"))
+  abline(v = c(-cfg$thresholds$abs_log2fc, cfg$thresholds$abs_log2fc), lty = 2, col = "grey40")
+  abline(h = -log10(cfg$thresholds$padj), lty = 2, col = "grey40")
+  dev.off()
 
   res_df <- as.data.frame(res)
   res_df$gene <- rownames(res_df)
