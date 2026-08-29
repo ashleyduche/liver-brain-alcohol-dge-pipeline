@@ -33,19 +33,32 @@ cat(sprintf("  %d samples (%d Control / %d Alcohol-Treated)\n",
             sum(coldata$Group == cfg$group$treated_group)))
 
 # PCA on raw counts, before DESeq2 -- same as the original per-ROI scripts.
+# coldata is already in the same row order as counts, so Group/batch are
+# just pulled straight off it -- no join needed.
 pca <- prcomp(t(log2(counts + 1)))
-var_explained <- round(100 * pca$sdev^2 / sum(pca$sdev^2), 1)
-pca_df <- as.data.frame(pca$x[, 1:2])
-pca_df$sample_id <- rownames(pca_df)
-pca_df <- left_join(pca_df, coldata[, c("sample_id", "Group", "batch")], by = "sample_id")
-p_pca <- ggplot(pca_df, aes(PC1, PC2, color = Group, shape = batch)) +
-  geom_point(size = 3) +
-  scale_color_manual(values = c(Control = "green3", "Alcohol-Treated" = "red")) +
-  labs(title = roi_def$label, x = sprintf("PC1 (%.1f%%)", var_explained[1]),
-       y = sprintf("PC2 (%.1f%%)", var_explained[2]), shape = "Batch (animal)") +
-  theme_bw()
-ggsave(file.path(figures_dir, paste0(roi_name, "_PCA.pdf")), p_pca, width = 6, height = 5)
-ggsave(file.path(figures_dir, paste0(roi_name, "_PCA.png")), p_pca, width = 6, height = 5, dpi = 150)
+
+point_col <- ifelse(coldata$Group == cfg$group$control_group, "green3", "red")
+batch_levels <- sort(unique(coldata$batch))
+point_pch <- match(coldata$batch, batch_levels)
+y_range <- range(pca$x[, 2])
+y_lim <- c(y_range[1], y_range[2] + diff(y_range) * 0.45) # headroom for the legend
+
+pdf(file.path(figures_dir, paste0(roi_name, "_PCA.pdf")))
+plot(pca)
+plot(pca$x[, 1], pca$x[, 2], ylim = y_lim,
+     col = point_col, pch = point_pch, cex = 1.5,
+     xlab = "PC1", ylab = "PC2",
+     main = paste0(roi_def$label, ": Control (green) vs Alcohol-Treated (red)"))
+legend("topright", legend = batch_levels, pch = seq_along(batch_levels), title = "Batch (animal)", bty = "n")
+dev.off()
+
+png(file.path(figures_dir, paste0(roi_name, "_PCA.png")), width = 800, height = 700, res = 120)
+plot(pca$x[, 1], pca$x[, 2], ylim = y_lim,
+     col = point_col, pch = point_pch, cex = 1.5,
+     xlab = "PC1", ylab = "PC2",
+     main = paste0(roi_def$label, ": Control (green) vs Alcohol-Treated (red)"))
+legend("topright", legend = batch_levels, pch = seq_along(batch_levels), title = "Batch (animal)", bty = "n")
+dev.off()
 
 dds <- DESeqDataSetFromMatrix(countData = as.matrix(counts), colData = coldata, design = ~ Group)
 
@@ -58,6 +71,32 @@ dds <- dds[keep_genes, ]
 
 dds <- DESeq(dds)
 res <- results(dds)
+
+# MA plot -- same as the original per-ROI scripts (plotMA(res)).
+pdf(file.path(figures_dir, paste0(roi_name, "_MA.pdf")))
+plotMA(res, main = roi_def$label)
+dev.off()
+png(file.path(figures_dir, paste0(roi_name, "_MA.png")), width = 800, height = 700, res = 120)
+plotMA(res, main = roi_def$label)
+dev.off()
+
+# Volcano plot: log2FoldChange vs -log10(padj), significant genes in red.
+is_sig <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj &
+  (res$log2FoldChange > cfg$thresholds$abs_log2fc | res$log2FoldChange < -cfg$thresholds$abs_log2fc)
+volcano_col <- ifelse(is_sig, "red", "grey60")
+
+pdf(file.path(figures_dir, paste0(roi_name, "_Volcano.pdf")))
+plot(res$log2FoldChange, -log10(res$padj), col = volcano_col, pch = 20,
+     xlab = "log2 Fold Change", ylab = "-log10(padj)", main = paste0(roi_def$label, ": Volcano Plot"))
+abline(v = c(-cfg$thresholds$abs_log2fc, cfg$thresholds$abs_log2fc), lty = 2, col = "grey40")
+abline(h = -log10(cfg$thresholds$padj), lty = 2, col = "grey40")
+dev.off()
+png(file.path(figures_dir, paste0(roi_name, "_Volcano.png")), width = 800, height = 700, res = 120)
+plot(res$log2FoldChange, -log10(res$padj), col = volcano_col, pch = 20,
+     xlab = "log2 Fold Change", ylab = "-log10(padj)", main = paste0(roi_def$label, ": Volcano Plot"))
+abline(v = c(-cfg$thresholds$abs_log2fc, cfg$thresholds$abs_log2fc), lty = 2, col = "grey40")
+abline(h = -log10(cfg$thresholds$padj), lty = 2, col = "grey40")
+dev.off()
 
 res_df <- as.data.frame(res)
 res_df$gene <- rownames(res_df)
