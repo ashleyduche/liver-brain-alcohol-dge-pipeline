@@ -1,6 +1,7 @@
-# No-loop alternative to R/05_run_dge_all_rois.R -- same steps for ONE ROI,
-# in the same order (normalize -> PCA -> filter -> DESeq2). The steps don't
-# change by tissue, so just interchange roi_name below and re-run.
+# No-loop alternative to R/04_run_dge_all_rois.R -- same steps for ONE
+# ROI, in the same order as the original per-ROI scripts: raw-count PCA,
+# then build dds -> normalize -> filter -> DESeq2. The steps don't change
+# by tissue, so just interchange roi_name below and re-run.
 
 roi_name <- "plaqueCortex" # <- change to: nonplaqueCortex, plaqueHippo, nonplaqueHippo, periportal, perivenous
 
@@ -31,25 +32,26 @@ cat(sprintf("  %d samples (%d Control / %d Alcohol-Treated)\n",
             sum(coldata$Group == cfg$group$control_group),
             sum(coldata$Group == cfg$group$treated_group)))
 
-dds <- DESeqDataSetFromMatrix(countData = as.matrix(counts), colData = coldata, design = ~ Group)
-
-dds <- estimateSizeFactors(dds)
-norm_log2 <- log2(counts(dds, normalized = TRUE, replaced = FALSE) + 1)
-write.csv(norm_log2, file.path(norm_dir, paste0(roi_name, "_log2NormalizedCounts.csv")))
-
-# PCA before DESeq2 model fitting -- QC on the data going into the model.
-pca <- prcomp(t(norm_log2), scale. = FALSE)
+# PCA on raw counts, before DESeq2 -- same as the original per-ROI scripts.
+pca <- prcomp(t(log2(counts + 1)))
 var_explained <- round(100 * pca$sdev^2 / sum(pca$sdev^2), 1)
 pca_df <- as.data.frame(pca$x[, 1:2])
 pca_df$sample_id <- rownames(pca_df)
-pca_df <- left_join(pca_df, meta[, c("sample_id", "Group", "batch")], by = "sample_id")
+pca_df <- left_join(pca_df, coldata[, c("sample_id", "Group", "batch")], by = "sample_id")
 p_pca <- ggplot(pca_df, aes(PC1, PC2, color = Group, shape = batch)) +
   geom_point(size = 3) +
+  scale_color_manual(values = c(Control = "green3", "Alcohol-Treated" = "red")) +
   labs(title = roi_def$label, x = sprintf("PC1 (%.1f%%)", var_explained[1]),
        y = sprintf("PC2 (%.1f%%)", var_explained[2]), shape = "Batch (animal)") +
   theme_bw()
 ggsave(file.path(figures_dir, paste0(roi_name, "_PCA.pdf")), p_pca, width = 6, height = 5)
 ggsave(file.path(figures_dir, paste0(roi_name, "_PCA.png")), p_pca, width = 6, height = 5, dpi = 150)
+
+dds <- DESeqDataSetFromMatrix(countData = as.matrix(counts), colData = coldata, design = ~ Group)
+
+dds <- estimateSizeFactors(dds)
+norm_log2 <- log2(counts(dds, normalized = TRUE, replaced = FALSE) + 1)
+write.csv(norm_log2, file.path(norm_dir, paste0(roi_name, "_log2NormalizedCounts.csv")))
 
 keep_genes <- rowSums(counts(dds)) >= cfg$thresholds$min_rowsum_prefilter
 dds <- dds[keep_genes, ]

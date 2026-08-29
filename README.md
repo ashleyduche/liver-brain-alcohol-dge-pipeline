@@ -78,14 +78,13 @@ R/
   00_setup.R                   loads config + shared functions
   01_fetch_from_geo.R          no-op unless data_source: geo
   02_prepare_metadata.R        parses metadata -> data/processed/sample_metadata.csv
-  03_normalize_counts.R        builds each ROI's dds + size factors (no model fitting yet)
-  04_pca_plots.R               PCA/QC per ROI, run before DESeq2 model fitting
-  05_run_dge_all_rois.R        DESeq2 model fit + results per ROI, looped over config.yml's 6 ROIs
-  05_run_dge_all_rois_no_loop.R   same steps, no loop -- change roi_name and re-run instead
-  06_compare_deg_lists.R       shared/unique significant genes across ROIs
-  07_render_heatmap.R          per-ROI heatmap grid (ggplot2 facet_wrap)
+  03_pca_plots.R               PCA/QC per ROI on raw counts (log2(counts+1)), before any DESeq2 object exists
+  04_run_dge_all_rois.R        DESeq2 (build dds -> normalize -> filter -> fit) per ROI, looped over config.yml's 6 ROIs
+  04_run_dge_all_rois_no_loop.R   same steps, no loop -- change roi_name and re-run instead
+  05_compare_deg_lists.R       shared/unique significant genes across ROIs
+  06_render_heatmap.R          per-ROI heatmap grid (ggplot2 facet_wrap)
   functions.R                  load_raw_counts(), subset_counts_by_tissue()
-run_pipeline.R                 orchestrator; sources 00-07 in order
+run_pipeline.R                 orchestrator; sources 00-06 in order
 data/
   example/                     synthetic demo dataset (committed)
   raw/                         real data goes here (gitignored, not committed)

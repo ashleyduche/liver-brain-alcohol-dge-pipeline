@@ -4,11 +4,10 @@
 source("R/00_setup.R")
 source("R/01_fetch_from_geo.R")             # no-op unless data_source: geo in config.yml
 source("R/02_prepare_metadata.R")
-source("R/03_normalize_counts.R")
-source("R/04_pca_plots.R")                  # PCA/QC before DESeq2 model fitting
-source("R/05_run_dge_all_rois.R")           # loop-based; swap in 05_run_dge_all_rois_no_loop.R for the unlooped version
-source("R/06_compare_deg_lists.R")
-source("R/07_render_heatmap.R")
+source("R/03_pca_plots.R")                  # raw-count PCA/QC, before any DESeq2 object exists
+source("R/04_run_dge_all_rois.R")           # loop-based; swap in 04_run_dge_all_rois_no_loop.R for the unlooped version
+source("R/05_compare_deg_lists.R")
+source("R/06_render_heatmap.R")
 
 cat("\nPipeline complete. See results/ for outputs:\n")
 cat("  results/normalized_counts/  - per-ROI log2 DESeq2-normalized counts\n")
