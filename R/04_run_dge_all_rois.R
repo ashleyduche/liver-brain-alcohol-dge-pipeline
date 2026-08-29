@@ -1,21 +1,37 @@
-# Runs DESeq2 (Control vs Alcohol-Treated) for each ROI, reusing the
-# already-normalized dds objects from 03_normalize_counts.R. Same steps as
-# the original per-ROI scripts, looped instead of copy-pasted 6 times.
-# Prefer no loop? See 05_run_dge_all_rois_no_loop.R.
+# Runs DESeq2 (Control vs Alcohol-Treated) for each ROI in config.yml.
+# Same steps as the original per-ROI scripts, looped instead of
+# copy-pasted 6 times. Prefer no loop? See 04_run_dge_all_rois_no_loop.R.
 
-deg_dir <- file.path(cfg$paths$results_dir, "deg_tables")
+dir.create(cfg$paths$results_dir, recursive = TRUE, showWarnings = FALSE)
+norm_dir <- file.path(cfg$paths$results_dir, "normalized_counts")
+deg_dir  <- file.path(cfg$paths$results_dir, "deg_tables")
+dir.create(norm_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(deg_dir, recursive = TRUE, showWarnings = FALSE)
 
 roi_results <- list()
 
-for (roi_name in names(roi_dds)) {
-  roi_def <- roi_dds[[roi_name]]$roi_def
-  dds <- roi_dds[[roi_name]]$dds
+for (roi_name in names(cfg$rois)) {
+  roi_def <- cfg$rois[[roi_name]]
   cat(sprintf("\n=== %s (%s) ===\n", roi_name, roi_def$label))
+
+  roi_data <- subset_counts_by_tissue(meta, raw_counts, roi_def)
+  coldata  <- roi_data$coldata
+  counts   <- roi_data$counts
+
   cat(sprintf("  %d samples (%d Control / %d Alcohol-Treated)\n",
-              ncol(dds),
-              sum(dds$Group == cfg$group$control_group),
-              sum(dds$Group == cfg$group$treated_group)))
+              nrow(coldata),
+              sum(coldata$Group == cfg$group$control_group),
+              sum(coldata$Group == cfg$group$treated_group)))
+
+  dds <- DESeqDataSetFromMatrix(
+    countData = as.matrix(counts),
+    colData   = coldata,
+    design    = ~ Group
+  )
+
+  dds <- estimateSizeFactors(dds)
+  norm_log2 <- log2(counts(dds, normalized = TRUE, replaced = FALSE) + 1)
+  write.csv(norm_log2, file.path(norm_dir, paste0(roi_name, "_log2NormalizedCounts.csv")))
 
   keep_genes <- rowSums(counts(dds)) >= cfg$thresholds$min_rowsum_prefilter
   dds <- dds[keep_genes, ]
@@ -45,7 +61,7 @@ for (roi_name in names(roi_dds)) {
   roi_results[[roi_name]] <- list(
     roi_def     = roi_def,
     sig_results = sig_df,
-    norm_log2   = roi_dds[[roi_name]]$norm_log2,
+    norm_log2   = norm_log2,
     n_sig       = n_sig,
     included    = included
   )
