@@ -2,7 +2,7 @@
 # Control/Alcohol-Treated Group factor for DESeq2, plus a batch column
 # (animal ID) for PCA/QC -- animal isn't its own field in the metadata, but
 # it's embedded in every sample_id (e.g. "Tg-Cont-6876-..."), so we pull it
-# out with a regex instead. Plain tidyverse, no custom function.
+# out with a regex instead. 
 
 raw_meta <- read_excel(cfg$paths$metadata_xlsx, sheet = cfg$paths$metadata_sheet, col_names = FALSE)
 

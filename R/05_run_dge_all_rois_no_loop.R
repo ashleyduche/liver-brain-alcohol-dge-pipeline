@@ -1,17 +1,19 @@
-# No-loop alternative to R/02_run_dge_all_rois.R -- same DESeq2 steps for
-# ONE ROI. The steps don't change by tissue, so just interchange roi_name
-# below and re-run to analyze a different region.
+# No-loop alternative to R/05_run_dge_all_rois.R -- same steps for ONE ROI,
+# in the same order (normalize -> PCA -> filter -> DESeq2). The steps don't
+# change by tissue, so just interchange roi_name below and re-run.
 
 roi_name <- "plaqueCortex" # <- change to: nonplaqueCortex, plaqueHippo, nonplaqueHippo, periportal, perivenous
 
 if (!exists("cfg"))  source("R/00_setup.R")
-if (!exists("meta")) source("R/01_prepare_metadata.R")
+if (!exists("meta")) source("R/02_prepare_metadata.R")
 
 dir.create(cfg$paths$results_dir, recursive = TRUE, showWarnings = FALSE)
-norm_dir <- file.path(cfg$paths$results_dir, "normalized_counts")
-deg_dir  <- file.path(cfg$paths$results_dir, "deg_tables")
+norm_dir    <- file.path(cfg$paths$results_dir, "normalized_counts")
+deg_dir     <- file.path(cfg$paths$results_dir, "deg_tables")
+figures_dir <- file.path(cfg$paths$results_dir, "figures")
 dir.create(norm_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(deg_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 if (!exists("roi_results")) roi_results <- list()
 
 roi_def <- cfg$rois[[roi_name]]
@@ -34,6 +36,20 @@ dds <- DESeqDataSetFromMatrix(countData = as.matrix(counts), colData = coldata, 
 dds <- estimateSizeFactors(dds)
 norm_log2 <- log2(counts(dds, normalized = TRUE, replaced = FALSE) + 1)
 write.csv(norm_log2, file.path(norm_dir, paste0(roi_name, "_log2NormalizedCounts.csv")))
+
+# PCA before DESeq2 model fitting -- QC on the data going into the model.
+pca <- prcomp(t(norm_log2), scale. = FALSE)
+var_explained <- round(100 * pca$sdev^2 / sum(pca$sdev^2), 1)
+pca_df <- as.data.frame(pca$x[, 1:2])
+pca_df$sample_id <- rownames(pca_df)
+pca_df <- left_join(pca_df, meta[, c("sample_id", "Group", "batch")], by = "sample_id")
+p_pca <- ggplot(pca_df, aes(PC1, PC2, color = Group, shape = batch)) +
+  geom_point(size = 3) +
+  labs(title = roi_def$label, x = sprintf("PC1 (%.1f%%)", var_explained[1]),
+       y = sprintf("PC2 (%.1f%%)", var_explained[2]), shape = "Batch (animal)") +
+  theme_bw()
+ggsave(file.path(figures_dir, paste0(roi_name, "_PCA.pdf")), p_pca, width = 6, height = 5)
+ggsave(file.path(figures_dir, paste0(roi_name, "_PCA.png")), p_pca, width = 6, height = 5, dpi = 150)
 
 keep_genes <- rowSums(counts(dds)) >= cfg$thresholds$min_rowsum_prefilter
 dds <- dds[keep_genes, ]

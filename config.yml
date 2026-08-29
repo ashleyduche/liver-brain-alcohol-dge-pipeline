@@ -15,7 +15,7 @@ paths:
 # "local" (default) reads the paths above as-is. "geo" downloads the raw
 # counts supplementary file from the accession below and overwrites
 # raw_counts_csv before the rest of the pipeline runs -- see
-# R/00_fetch_from_geo.R for why metadata still comes from the local file.
+# R/01_fetch_from_geo.R for why metadata still comes from the local file.
 data_source: local
 
 geo:

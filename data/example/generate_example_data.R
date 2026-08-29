@@ -77,11 +77,11 @@ for (r in names(n_deg)) {
 counts <- rbind(counts, "NegProbe-WTX" = rpois(ncol(counts), lambda = 2))
 write.csv(counts, "data/example/RawCounts_example.csv")
 
-# Metadata workbook, same shape 01_prepare_metadata.R already expects to
+# Metadata workbook, same shape 02_prepare_metadata.R already expects to
 # parse: a few boilerplate rows, then a "*library name" header row, then
 # one row per sample. Animal batch isn't a separate column here either --
 # same as the real metadata, it's recovered from the sample_id in
-# 01_prepare_metadata.R.
+# 02_prepare_metadata.R.
 header <- c("*library name", "**tissue", "genotype", "treatment", "region", "pathology", "sex")
 rows <- c(
   list("# Example dataset for pipeline demonstration"),
