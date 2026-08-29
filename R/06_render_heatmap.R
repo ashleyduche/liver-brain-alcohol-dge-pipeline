@@ -8,18 +8,25 @@ dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 if (length(included_rois) == 0) {
   cat("No eligible ROIs -- skipping heatmap.\n")
 } else {
-  roi_heatmap_long <- bind_rows(lapply(included_rois, function(r) {
-    sig <- roi_results[[r]]$sig_results
+  # Collect each panel's data first, then bind once at the end -- binding
+  # incrementally would silently drop the per-panel gene ordering below
+  # (bind_rows can't preserve factor levels against an empty starting frame).
+  roi_heatmap_pieces <- list()
+  max_genes <- 0
+  for (roi_name in included_rois) {
+    sig <- roi_results[[roi_name]]$sig_results
     genes <- sig$gene[order(-sig$log2FoldChange)] # up-regulated genes together, then down -- stands in for clustering
-    z <- t(scale(t(roi_results[[r]]$norm_log2[genes, , drop = FALSE])))
+    max_genes <- max(max_genes, length(genes))
+
+    z <- t(scale(t(roi_results[[roi_name]]$norm_log2[genes, , drop = FALSE])))
     df <- as.data.frame(z)
     df$gene <- factor(rownames(z), levels = rev(genes))
     df <- pivot_longer(df, -gene, names_to = "sample_id", values_to = "z")
-    df$ROI <- roi_results[[r]]$roi_def$label
-    df
-  }))
+    df$ROI <- roi_results[[roi_name]]$roi_def$label
 
-  max_genes <- max(vapply(included_rois, function(r) nrow(roi_results[[r]]$sig_results), integer(1)))
+    roi_heatmap_pieces[[roi_name]] <- df
+  }
+  roi_heatmap_long <- bind_rows(roi_heatmap_pieces)
 
   p <- ggplot(roi_heatmap_long, aes(sample_id, gene, fill = z)) +
     geom_tile() +

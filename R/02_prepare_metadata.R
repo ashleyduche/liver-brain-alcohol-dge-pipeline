@@ -6,7 +6,7 @@
 
 raw_meta <- read_excel(cfg$paths$metadata_xlsx, sheet = cfg$paths$metadata_sheet, col_names = FALSE)
 
-# The SAMPLES section header isn't at a fixed row, so find it by name.
+# Find SAMPLES section header by name.
 header_row <- which(raw_meta[[1]] == "*library name")
 stopifnot("Could not uniquely locate the '*library name' header row" = length(header_row) == 1)
 colnames(raw_meta) <- as.character(raw_meta[header_row, ])
