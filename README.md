@@ -1,4 +1,4 @@
-# Liver & Brain Alcohol-Treatment DGE Pipeline
+# APPPS1-Alcohol-Liver-Brain-Spatial-Transcriptomics
 
 This repository contains a reproducible `DESeq2` analysis pipeline designed to explore how chronic alcohol consumption influences Alzheimer's Disease (AD) pathology. By analyzing spatial transcriptomics data from the liver and brain of APP/PS1 mice intragastrically fed alcohol for 5 weeks, this pipeline identifies differentially expressed genes (DEGs) to map molecular changes caused by alcohol within highly specific tissue microenvironments.
 
@@ -12,7 +12,7 @@ Rscript run_pipeline.R
 
 ## Methods
 
-Independently for each of the six ROIs, DESeq2 (`~ Group`, Control as reference) compares alcohol-treated vs. control samples, specifying design formula as `~ Group` with control as reference. Statistically significant differentially expressed genes (DEGs) are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini-Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
+For each of the six regions of interest (ROIs), DESeq2 (`~ Group`, Control as reference) compares alcohol-treated vs. control samples, specifying design formula as `~ Group` with control as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini-Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
 
 ## Data
 
@@ -32,19 +32,19 @@ Every run produces `results/figures/`: PCA, MA, and volcano plots per ROI, plus 
 
 **PCA** — Control (green) vs. Alcohol-Treated (red), shaped by batch:
 
-![PCA](docs/figures/example_pca.png)
+![PCA](figures/example_pca.png)
 
 **MA plot:**
 
-![MA plot](docs/figures/example_ma.png)
+![MA plot](figures/example_ma.png)
 
 **Volcano plot** — significant genes in red:
 
-![Volcano plot](docs/figures/example_volcano.png)
+![Volcano plot](figures/example_volcano.png)
 
 **Heatmap** — each ROI's own significant genes, z-scored:
 
-![Heatmap](docs/figures/example_heatmap.png)
+![Heatmap](figures/example_heatmap.png)
 
 ## Structure
 
@@ -64,13 +64,14 @@ run_pipeline.R                 runs 00-06 in order
 data/
   example/                     synthetic demo dataset (committed)
   raw/                         real data goes here (gitignored)
+  processed/                   pipeline-generated intermediate files (gitignored)
 results/
-  normalized_counts/, deg_tables/, comparisons/, figures/
-docs/figures/                  example images used in this README
+  normalized_counts/, deg_tables/, comparisons/, figures/   (figures/ here = plots from your last run)
+figures/                       example images used in this README (not the same folder as results/figures/)
 ```
 
 Requires R with `DESeq2`, `readxl`, `dplyr`, `tidyr`, `stringr`, `ggplot2`, `yaml`. `GEOquery` is only needed for `data_source: geo`.
 
 ## Validation
 
-Run on the real dataset, results matched the original per-ROI scripts: `plaqueCortex` 0 significant genes, `plaqueHippo` 96, `periportal`/ `perivenous` 182/805 (same order of magnitude as the original 189/\~802-807 — those scripts ran on an older, smaller probe panel). Only `plaqueHippo`, `periportal`, and `perivenous` clear the 10-gene threshold, so those three are what carry into the comparison and heatmap step.
+Ran on the real dataset, results matched the original per-ROI scripts: `plaqueCortex` 0 significant genes, `plaqueHippo` 97, `periportal`/ `perivenous` 189/802 . Only `plaqueHippo`, `periportal`, and `perivenous` contained more than 10 signifigant DEGs and were included in downstream pathway and network analyses.
