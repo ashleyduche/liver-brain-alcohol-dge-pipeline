@@ -12,7 +12,7 @@ Rscript run_pipeline.R
 
 ## Methods
 
-For each of the six regions of interest (ROIs), DESeq2 (`~ Group`, Control as reference) compares alcohol-treated vs. control samples, specifying design formula as `~ Group` with control as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini-Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
+For the six regions of interest (ROIs), DESeq2 compares alcohol-treated vs. control samples within each ROI, defining the design formula as `~ Group` with controls set as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini-Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
 
 ## Data
 
@@ -28,7 +28,7 @@ For each of the six regions of interest (ROIs), DESeq2 (`~ Group`, Control as re
 
 ## Figures
 
-Every run produces `results/figures/`: PCA, MA, and volcano plots per ROI, plus a combined per-ROI heatmap grid. Examples from the synthetic data:
+Every run produces `results/figures/`: PCA, MA, and volcano plots per ROI, along with a faceted plot containing all output heatmaps per ROI. Examples from the synthetic data:
 
 **PCA** — Control (green) vs. Alcohol-Treated (red), shaped by batch:
 
@@ -46,9 +46,9 @@ Every run produces `results/figures/`: PCA, MA, and volcano plots per ROI, plus 
 
 ![Heatmap](results/figures/example_heatmap.png)
 
-`results/deg_tables/` has the actual DESeq2 output from the example run
-committed too, per ROI: `<ROI>_AllDEGs.csv` (every tested gene) and
-`<ROI>_SigDEGs_*.csv` (just the significant ones).
+`results/deg_tables/` contains the DESeq2 output from the example run, 
+per ROI:`<ROI>_AllDEGs.csv` (complete ranked gene list) and
+`<ROI>_SigDEGs_*.csv` (statistically significant DEGs).
 
 ## Structure
 
@@ -79,4 +79,4 @@ Requires R with `DESeq2`, `readxl`, `dplyr`, `tidyr`, `stringr`, `ggplot2`, `yam
 
 ## Validation
 
-Ran on the real dataset, results matched the original per-ROI scripts: `plaqueCortex` 0 significant genes, `plaqueHippo` 97, `periportal`/ `perivenous` 189/802 . Only `plaqueHippo`, `periportal`, and `perivenous` contained more than 10 signifigant DEGs and were included in downstream pathway and network analyses.
+Ran on the real dataset, results matched the original per-ROI scripts and statistically significant DEG lists: `nonplaqueCortex` 3 DEGs, `plaqueCortex` 0 significant genes, `nonplaqueHippo` 0 signifigant genes, `plaqueHippo` 97, `periportal` 189 DEGs, `perivenous` 802 DEGs . Only `plaqueHippo`, `periportal`, and `perivenous` contained more than 10 significant DEGs and were included in downstream pathway and network analyses.
