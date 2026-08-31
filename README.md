@@ -32,19 +32,19 @@ Every run produces `results/figures/`: PCA, MA, and volcano plots per ROI, plus 
 
 **PCA** — Control (green) vs. Alcohol-Treated (red), shaped by batch:
 
-![PCA](figures/example_pca.png)
+![PCA](results/figures/example_pca.png)
 
 **MA plot:**
 
-![MA plot](figures/example_ma.png)
+![MA plot](results/figures/example_ma.png)
 
 **Volcano plot** — significant genes in red:
 
-![Volcano plot](figures/example_volcano.png)
+![Volcano plot](results/figures/example_volcano.png)
 
 **Heatmap** — each ROI's own significant genes, z-scored:
 
-![Heatmap](figures/example_heatmap.png)
+![Heatmap](results/figures/example_heatmap.png)
 
 ## Structure
 
@@ -66,8 +66,8 @@ data/
   raw/                         real data goes here (gitignored)
   processed/                   pipeline-generated intermediate files (gitignored)
 results/
-  normalized_counts/, deg_tables/, comparisons/, figures/   (figures/ here = plots from your last run)
-figures/                       example images used in this README (not the same folder as results/figures/)
+  normalized_counts/, deg_tables/, comparisons/           each run's output
+  figures/                     plots from your last run, plus example_*.png (committed, used in this README)
 ```
 
 Requires R with `DESeq2`, `readxl`, `dplyr`, `tidyr`, `stringr`, `ggplot2`, `yaml`. `GEOquery` is only needed for `data_source: geo`.
