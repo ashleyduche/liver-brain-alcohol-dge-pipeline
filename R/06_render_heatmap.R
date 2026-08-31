@@ -31,7 +31,7 @@ if (length(included_rois) == 0) {
   p <- ggplot(roi_heatmap_long, aes(sample_id, gene, fill = z)) +
     geom_tile() +
     facet_wrap(~ ROI, scales = "free", ncol = 2) +
-    scale_fill_gradient2(low = "steelblue", mid = "white", high = "firebrick", midpoint = 0, name = "z-score") +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "z-score") + # same red/blue as the volcano plot
     labs(title = "Significant DEGs by ROI (z-scored log2 normalized counts)", x = NULL, y = NULL) +
     theme_minimal() +
     theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
