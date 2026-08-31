@@ -49,10 +49,11 @@ for (roi_name in names(cfg$rois)) {
   plotMA(res, main = roi_def$label)
   dev.off()
 
-  # Volcano plot: log2FoldChange vs -log10(padj), significant genes in red.
-  is_sig <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj &
-    (res$log2FoldChange > cfg$thresholds$abs_log2fc | res$log2FoldChange < -cfg$thresholds$abs_log2fc)
-  volcano_col <- ifelse(is_sig, "red", "grey60")
+  # Volcano plot: log2FoldChange vs -log10(padj). Significant genes colored
+  # by direction -- red for up (log2FC > threshold), blue for down.
+  is_sig_up   <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj & res$log2FoldChange > cfg$thresholds$abs_log2fc
+  is_sig_down <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj & res$log2FoldChange < -cfg$thresholds$abs_log2fc
+  volcano_col <- ifelse(is_sig_up, "red", ifelse(is_sig_down, "blue", "grey60"))
 
   pdf(file.path(figures_dir, paste0(roi_name, "_Volcano.pdf")))
   plot(res$log2FoldChange, -log10(res$padj), col = volcano_col, pch = 20,
