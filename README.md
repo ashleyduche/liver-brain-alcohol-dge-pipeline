@@ -46,6 +46,10 @@ Every run produces `results/figures/`: PCA, MA, and volcano plots per ROI, plus 
 
 ![Heatmap](results/figures/example_heatmap.png)
 
+`results/deg_tables/` has the actual DESeq2 output from the example run
+committed too, per ROI: `<ROI>_AllDEGs.csv` (every tested gene) and
+`<ROI>_SigDEGs_*.csv` (just the significant ones).
+
 ## Structure
 
 ```         
@@ -66,7 +70,8 @@ data/
   raw/                         real data goes here (gitignored)
   processed/                   pipeline-generated intermediate files (gitignored)
 results/
-  normalized_counts/, deg_tables/, comparisons/           each run's output
+  normalized_counts/, comparisons/     each run's output (gitignored, regenerated)
+  deg_tables/                  DESeq2 output per ROI (committed, from the example run)
   figures/                     plots from your last run, plus example_*.png (committed, used in this README)
 ```
 
