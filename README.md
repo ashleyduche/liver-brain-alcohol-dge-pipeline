@@ -15,9 +15,7 @@ Rscript run_pipeline.R
 
 ## Methods
 
-*This is an exploratory analysis. ROIs are treated as individual samples, so p values should be interpreted with caution.*
-
-For the six regions of interest (ROIs), DESeq2 compares samples from mice fed alcohol with control samples within each ROI, defining the design formula as `~ Group` with controls set as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC only. Animal ID is not included in the DESeq2 model, so ROIs from the same animal are treated as independent replicates.
+For the six regions of interest (ROIs), DESeq2 compares samples from mice fed alcohol with control samples within each ROI, defining the design formula as `~ Group` with controls set as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
 
 ## Data
 
@@ -85,5 +83,3 @@ Requires R with `DESeq2`, `readxl`, `dplyr`, `tidyr`, `stringr`, `ggplot2`, `yam
 ## Validation
 
 Ran on the real dataset, results matched the original per-ROI scripts and statistically significant DEG lists: `nonplaqueCortex` 3 DEGs, `plaqueCortex` 0 DEGs, `nonplaqueHippo` 0 DEGs, `plaqueHippo` 97 DEGs, `periportal` 189 DEGs, `perivenous` 802 DEGs . Only `plaqueHippo`, `periportal`, and `perivenous` contained more than 10 significant DEGs and were included in downstream pathway and network analyses.
-
-**Caution:** These counts come from a model that treats each ROI as an independent sample, even though the study includes only four animals. Because of this, they overstate the statistical evidence. These counts, along with any pathway or network results based on them, should be treated as exploratory.

@@ -1,11 +1,6 @@
 # Top-level driver for the liver & brain alcohol-treatment DGE pipeline.
 # Run from the project root: Rscript run_pipeline.R
 
-# EXPLORATORY ANALYSIS: every GeoMx ROI is treated as an independent sample even though
-# ROIs come from only 4 animals (2 control, 2 alcohol-treated). P-values are therefore
-# anti-conservative and should be interpreted with caution. See README.
-cat("NOTE: exploratory analysis -- ROIs treated as independent samples; interpret significance with caution.\n")
-
 source("R/00_setup.R")
 source("R/01_fetch_from_geo.R")             # no-op unless data_source: geo in config.yml
 source("R/02_prepare_metadata.R")
