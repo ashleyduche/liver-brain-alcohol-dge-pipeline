@@ -3,15 +3,7 @@
 This repository contains a reproducible `DESeq2` analysis pipeline designed to explore how chronic alcohol consumption influences Alzheimer's Disease (AD) pathology. By analyzing spatial transcriptomics data from the liver and brain of APP/PS1 mice intragastrically fed alcohol for 5 weeks, this pipeline identifies differentially expressed genes (DEGs) to map molecular changes associated with chronic alcohol consumption within highly specific tissue microenvironments.
 
 > [!WARNING]
-> **Exploratory analysis — interpret statistical significance with caution.**
-> This study has only **four animals** (two control, two alcohol-treated). Each GeoMx region of interest (ROI) is a
-> subsample of an animal, but this pipeline **treats every ROI as an independent sample** (e.g. 8 control vs. 8
-> alcohol-treated periportal ROIs from just 4 mice). ROIs from the same animal are correlated (pseudoreplication), so
-> the effective sample size is much closer to n = 2 vs. 2 than to the number of ROIs. As a result, the DESeq2 p-values and
-> adjusted p-values reported here are **anti-conservative** (too optimistic), and the DEG counts below should be read as
-> **hypothesis-generating, not confirmatory**. Findings need validation in additional animals or an orthogonal assay.
-> For an analysis that accounts for the animal-level structure, see the companion repository
-> (`liver-brain-alcohol-geomx-animal-aware`).
+> **This is an exploratory analysis that treats ROIs as independent samples.** The study has four animals (two control, two alcohol-treated), and ROIs from the same animal are not independent replicates (pseudoreplication). This means statistical significance should be interpreted with caution. A more appropriate approach to processing this data, which treats the animal as the replicate by aggregating ROIs per animal (pseudobulk), can be found in [liver-brain-alcohol-geomx-animal-aware](https://github.com/ashleyduche/liver-brain-alcohol-geomx-animal-aware).
 
 The study data are public on GEO ([GSE324193](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE324193)). The pipeline runs out of the box on the provided synthetic data; point `config.yml` at the GEO files to reproduce the real analysis.
 
