@@ -13,7 +13,7 @@ This repository contains a reproducible `DESeq2` analysis pipeline designed to e
 > For an analysis that accounts for the animal-level structure, see the companion repository
 > (`liver-brain-alcohol-geomx-animal-aware`).
 
-This pipeline can be executed using the provided synthetic data until the study becomes public. Once available, placeholder files can be replaced with published data from GEO.
+The study data are public on GEO ([GSE324193](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE324193)). The pipeline runs out of the box on the provided synthetic data; point `config.yml` at the GEO files to reproduce the real analysis.
 
 ``` bash
 git clone <this-repo-url>
@@ -35,7 +35,7 @@ For the six regions of interest (ROIs), DESeq2 compares alcohol-treated vs. cont
 |------------------------|------------------------|------------------------|
 | Example (default) | `local`, paths → `data/example/` | Synthetic 72-sample dataset, same design as the real study. Not real measurements. |
 | Real data | `local`, paths → `data/raw/` | Point `config.yml` at `data/raw/` once you have the real files locally (not in this repo). |
-| GEO | `geo`, `geo.accession` set | Downloads the raw counts from GEO once published. Metadata still comes from the local file (see `R/01_fetch_from_geo.R`). |
+| GEO | `geo`, `geo.accession` set | Downloads the raw counts from GEO (GSE324193). Metadata still comes from the local file (see `R/01_fetch_from_geo.R`). |
 
 `data/raw/` is gitignored — the real dataset stays off GitHub until published.
 
