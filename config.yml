@@ -22,6 +22,8 @@ geo:
   accession: ~ # e.g. "GSE300000" -- fill in once GEO assigns one after publication
   supplementary_file: "RawCounts_AllSamples.csv"
 
+# NOTE: exploratory analysis. ROIs are treated as independent samples (4 animals total), so
+# these padj thresholds are anti-conservative -- interpret significance with caution.
 thresholds:
   padj: 0.01
   abs_log2fc: 0.32

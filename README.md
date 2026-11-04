@@ -2,6 +2,17 @@
 
 This repository contains a reproducible `DESeq2` analysis pipeline designed to explore how chronic alcohol consumption influences Alzheimer's Disease (AD) pathology. By analyzing spatial transcriptomics data from the liver and brain of APP/PS1 mice intragastrically fed alcohol for 5 weeks, this pipeline identifies differentially expressed genes (DEGs) to map molecular changes associated with chronic alcohol consumption within highly specific tissue microenvironments.
 
+> [!WARNING]
+> **Exploratory analysis — interpret statistical significance with caution.**
+> This study has only **four animals** (two control, two alcohol-treated). Each GeoMx region of interest (ROI) is a
+> subsample of an animal, but this pipeline **treats every ROI as an independent sample** (e.g. 8 control vs. 8
+> alcohol-treated periportal ROIs from just 4 mice). ROIs from the same animal are correlated (pseudoreplication), so
+> the effective sample size is much closer to n = 2 vs. 2 than to the number of ROIs. As a result, the DESeq2 p-values and
+> adjusted p-values reported here are **anti-conservative** (too optimistic), and the DEG counts below should be read as
+> **hypothesis-generating, not confirmatory**. Findings need validation in additional animals or an orthogonal assay.
+> For an analysis that accounts for the animal-level structure, see the companion repository
+> (`liver-brain-alcohol-geomx-animal-aware`).
+
 This pipeline can be executed using the provided synthetic data until the study becomes public. Once available, placeholder files can be replaced with published data from GEO.
 
 ``` bash
@@ -12,7 +23,9 @@ Rscript run_pipeline.R
 
 ## Methods
 
-For the six regions of interest (ROIs), DESeq2 compares alcohol-treated vs. control samples within each ROI, defining the design formula as `~ Group` with controls set as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini-Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC.
+*Exploratory analysis: ROIs are treated as individual samples, so p-values should be interpreted with caution (see warning above).*
+
+For the six regions of interest (ROIs), DESeq2 compares alcohol-treated vs. control samples within each ROI, defining the design formula as `~ Group` with controls set as reference. Statistically significant DEGs are identified using `padj <= 0.01` and`log2FoldChange > ±0.32` threshold with Benjamini-Hochberg FDR correction. ROI gene lists with fewer than 10 significant DEGs are excluded from downstream analyses. Note: Batch (animal ID) is recovered from each sample's ID and used for PCA QC only; it is **not** in the DESeq2 model, so ROIs from the same animal are treated as independent replicates (see the exploratory-analysis warning above).
 
 ## Data
 
@@ -80,3 +93,5 @@ Requires R with `DESeq2`, `readxl`, `dplyr`, `tidyr`, `stringr`, `ggplot2`, `yam
 ## Validation
 
 Ran on the real dataset, results matched the original per-ROI scripts and statistically significant DEG lists: `nonplaqueCortex` 3 DEGs, `plaqueCortex` 0 DEGs, `nonplaqueHippo` 0 DEGs, `plaqueHippo` 97 DEGs, `periportal` 189 DEGs, `perivenous` 802 DEGs . Only `plaqueHippo`, `periportal`, and `perivenous` contained more than 10 significant DEGs and were included in downstream pathway and network analyses.
+
+**Caution:** these counts come from a model that treats ROIs as independent samples (4 animals in total), so they overstate the statistical evidence. Treat them, and any pathway or network results derived from them, as exploratory.
