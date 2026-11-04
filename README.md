@@ -1,4 +1,4 @@
-# APPPS1-Alcohol-Liver-Brain-Spatial-Transcriptomics
+# APP/PS1-Alcohol-Liver-Brain-Spatial-Transcriptomics
 
 This repository contains a reproducible `DESeq2` analysis pipeline designed to explore how chronic alcohol consumption influences Alzheimer's Disease (AD) pathology. By analyzing spatial transcriptomics data from the liver and brain of APP/PS1 mice intragastrically fed alcohol for 5 weeks, this pipeline identifies differentially expressed genes (DEGs) to map molecular changes associated with chronic alcohol consumption within highly specific tissue microenvironments.
 
