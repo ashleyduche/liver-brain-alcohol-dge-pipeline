@@ -1,7 +1,8 @@
-# Runs DESeq2 (Control vs Alcohol-Treated) for each ROI in config.yml.
-# Same steps as the original per-ROI scripts, looped instead of
-# copy-pasted 6 times. Prefer no loop? See 04_run_dge_all_rois_no_loop.R.
+# Runs DESeq2 (Control vs Alcohol-Treated) for each ROI in config.yml
+# Same steps as the original per ROI scripts, looped instead of repeated 6 times
+# For a version without the loop, see 04_run_dge_all_rois_no_loop.R
 
+# Output folders
 dir.create(cfg$paths$results_dir, recursive = TRUE, showWarnings = FALSE)
 norm_dir    <- file.path(cfg$paths$results_dir, "normalized_counts")
 deg_dir     <- file.path(cfg$paths$results_dir, "deg_tables")
@@ -31,26 +32,29 @@ for (roi_name in names(cfg$rois)) {
     design    = ~ Group
   )
 
+  # Normalize and save log2 normalized counts
   dds <- estimateSizeFactors(dds)
   norm_log2 <- log2(counts(dds, normalized = TRUE, replaced = FALSE) + 1)
   write.csv(norm_log2, file.path(norm_dir, paste0(roi_name, "_log2NormalizedCounts.csv")))
 
+  # Remove genes with low counts
   keep_genes <- rowSums(counts(dds)) >= cfg$thresholds$min_rowsum_prefilter
   dds <- dds[keep_genes, ]
 
   dds <- DESeq(dds)
   res <- results(dds)
 
-  # MA plot -- same as the original per-ROI scripts (plotMA(res)).
+  # MA plot, same as the original per ROI scripts (plotMA(res))
   pdf(file.path(figures_dir, paste0(roi_name, "_MA.pdf")))
   plotMA(res, main = roi_def$label)
   dev.off()
+
   png(file.path(figures_dir, paste0(roi_name, "_MA.png")), width = 800, height = 700, res = 120)
   plotMA(res, main = roi_def$label)
   dev.off()
 
-  # Volcano plot: log2FoldChange vs -log10(padj). Significant genes colored
-  # by direction -- red for up (log2FC > threshold), blue for down.
+  # Volcano plot of log2FoldChange against -log10(padj)
+  # Significant genes are red when up (log2FC > threshold) and blue when down
   is_sig_up   <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj & res$log2FoldChange > cfg$thresholds$abs_log2fc
   is_sig_down <- !is.na(res$padj) & res$padj <= cfg$thresholds$padj & res$log2FoldChange < -cfg$thresholds$abs_log2fc
   volcano_col <- ifelse(is_sig_up, "red", ifelse(is_sig_down, "blue", "grey60"))
@@ -61,6 +65,7 @@ for (roi_name in names(cfg$rois)) {
   abline(v = c(-cfg$thresholds$abs_log2fc, cfg$thresholds$abs_log2fc), lty = 2, col = "grey40")
   abline(h = -log10(cfg$thresholds$padj), lty = 2, col = "grey40")
   dev.off()
+
   png(file.path(figures_dir, paste0(roi_name, "_Volcano.png")), width = 800, height = 700, res = 120)
   plot(res$log2FoldChange, -log10(res$padj), col = volcano_col, pch = 20,
        xlab = "log2 Fold Change", ylab = "-log10(padj)", main = paste0(roi_def$label, ": Volcano Plot"))
@@ -68,12 +73,14 @@ for (roi_name in names(cfg$rois)) {
   abline(h = -log10(cfg$thresholds$padj), lty = 2, col = "grey40")
   dev.off()
 
+  # Save the full results table
   res_df <- as.data.frame(res)
   res_df$gene <- rownames(res_df)
   write.csv(res_df, file.path(deg_dir, paste0(roi_name, "_AllDEGs.csv")), row.names = FALSE)
 
   res_df_no_na <- res_df[!is.na(res_df$padj), ] # DESeq2's own independent filtering already applied
 
+  # Save the significant DEGs
   sig_df <- res_df_no_na %>%
     filter(log2FoldChange > cfg$thresholds$abs_log2fc | log2FoldChange < -cfg$thresholds$abs_log2fc,
            padj <= cfg$thresholds$padj)
@@ -81,6 +88,7 @@ for (roi_name in names(cfg$rois)) {
                                                 "_absLFC", cfg$thresholds$abs_log2fc, ".csv")),
             row.names = FALSE)
 
+  # ROIs with enough significant DEGs move on to the cross ROI comparison
   n_sig <- nrow(sig_df)
   included <- n_sig >= cfg$thresholds$min_sig_genes_downstream
   cat(sprintf("  %d significant DEGs (padj <= %s, |log2FC| > %s) -> %s\n",

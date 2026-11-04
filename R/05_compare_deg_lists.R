@@ -1,6 +1,6 @@
-# Compares significant DEGs across the three ROIs that clear the >=10-gene
-# threshold: plaqueHippo, periportal, perivenous (cortex ROIs never have
-# enough DEGs to compare -- see the DESeq2 step above).
+# Compares significant DEGs across the three ROIs that pass the 10 gene threshold
+# These are plaqueHippo, periportal and perivenous
+# The cortex ROIs never have enough DEGs to compare (see the DESeq2 step above)
 
 comparisons_dir <- file.path(cfg$paths$results_dir, "comparisons")
 dir.create(comparisons_dir, recursive = TRUE, showWarnings = FALSE)
@@ -15,6 +15,7 @@ cat("\n=== Cross-ROI DEG comparison ===\n")
 cat(sprintf("hip: %d genes | portal: %d genes | venous: %d genes\n",
             length(hip), length(portal), length(venous)))
 
+# Genes shared between ROIs
 hip_portal    <- intersect(hip, portal)
 hip_venous    <- intersect(hip, venous)
 portal_venous <- intersect(portal, venous)
@@ -25,7 +26,7 @@ cat(sprintf("  hip & venous shared: %d\n", length(hip_venous)))
 cat(sprintf("  portal & venous shared: %d\n", length(portal_venous)))
 cat(sprintf("  all three shared: %d\n", length(all_three)))
 
-# One table: every significant gene, and which ROI(s) it showed up in.
+# One table with every significant gene and the ROIs it appeared in
 all_genes <- unique(c(hip, portal, venous))
 gene_table <- data.frame(
   gene   = all_genes,

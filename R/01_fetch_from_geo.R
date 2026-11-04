@@ -1,10 +1,9 @@
-# Downloads the raw counts file from GEO once published, overwriting the
-# local copy. No-op unless data_source: geo in config.yml.
+# Downloads the raw counts file from GEO (GSE324193) and replaces the local copy
+# Only runs when data_source is geo in config.yml
 #
-# Metadata still comes from the local MetaData.xlsx, not GEO -- GEO only
-# exposes it as free-text characteristics keyed to GSM accession/title, not
-# to the *library name values the counts matrix uses as column headers, and
-# that mapping isn't reliable to re-derive until a real accession exists.
+# Metadata still comes from the local MetaData.xlsx rather than GEO
+# GEO stores the sample details as free text linked to GSM accessions
+# Those are not the *library name values used as column headers in the counts file
 
 if (identical(cfg$data_source, "geo")) {
   suppressPackageStartupMessages(library(GEOquery))
@@ -16,6 +15,7 @@ if (identical(cfg$data_source, "geo")) {
 
   dir.create(dirname(cfg$paths$raw_counts_csv), recursive = TRUE, showWarnings = FALSE)
 
+  # Download the supplementary files and find the counts file among them
   supp_files <- getGEOSuppFiles(cfg$geo$accession, baseDir = tempdir(), makeDirectory = TRUE)
   supp_path <- rownames(supp_files)[grepl(cfg$geo$supplementary_file, rownames(supp_files), fixed = TRUE)]
   stopifnot("Expected supplementary counts file not found in the GEO series" = length(supp_path) == 1)

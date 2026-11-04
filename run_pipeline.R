@@ -1,11 +1,11 @@
-# Top-level driver for the liver & brain alcohol-treatment DGE pipeline.
-# Run from the project root: Rscript run_pipeline.R
+# Top level driver for the liver and brain alcohol treatment DGE pipeline
+# Run from the project root with: Rscript run_pipeline.R
 
 source("R/00_setup.R")
-source("R/01_fetch_from_geo.R")             # no-op unless data_source: geo in config.yml
+source("R/01_fetch_from_geo.R")             # only runs when data_source is geo in config.yml
 source("R/02_prepare_metadata.R")
-source("R/03_pca_plots.R")                  # raw-count PCA/QC, before any DESeq2 object exists
-source("R/04_run_dge_all_rois.R")           # loop-based; swap in 04_run_dge_all_rois_no_loop.R for the unlooped version
+source("R/03_pca_plots.R")                  # raw count PCA and QC, before any DESeq2 object exists
+source("R/04_run_dge_all_rois.R")           # loop version, or swap in 04_run_dge_all_rois_no_loop.R for one ROI at a time
 source("R/05_compare_deg_lists.R")
 source("R/06_render_heatmap.R")
 
