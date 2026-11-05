@@ -49,6 +49,7 @@ if (length(missing_in_meta) > 0) {
 dir.create(dirname(cfg$paths$processed_metadata_csv), recursive = TRUE, showWarnings = FALSE)
 write.csv(meta, cfg$paths$processed_metadata_csv, row.names = FALSE)
 
-cat(sprintf("Parsed metadata for %d samples across %d ROIs.\n",
-            nrow(meta), length(cfg$rois)))
-print(table(meta$region, meta$pathology, meta$Group, useNA = "ifany"))
+# capture.output turns the table into text so cat prints the summary line and table together
+cat(sprintf("Parsed metadata for %d samples across %d ROIs.\n", nrow(meta), length(cfg$rois)),
+    paste(capture.output(table(meta$region, meta$pathology, meta$Group, useNA = "ifany")), collapse = "\n"), "\n",
+    sep = "")
